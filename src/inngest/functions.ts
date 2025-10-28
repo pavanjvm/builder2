@@ -1,13 +1,18 @@
 import { inngest } from "./client";
+import { openai, createAgent } from "@inngest/agent-kit";
 
 export const helloWorld = inngest.createFunction(
   { id: "hello-world" },
   { event: "test/hello.world" },
-  async ({ event, step }) => {
-    await step.sleep("wait-a-moment", "10s");
-    await step.sleep("wait-a-moment", "10s");
-    await step.sleep("wait-a-moment", "10s");
+  async ({ event}) => {
+    const writer = createAgent({
+      name: "writer",
+      system: "You are an expert writer.  You write readable, concise, simple content.",
+      model: openai({ model: "gpt-4o"}),
+    });
 
-    return { message: `Hello ${event.data.email}!` };
+    
+    const { output } = await writer.run(`Write a tweet on how ${event.data.value} works`);
+    return {output};
   },
 );
